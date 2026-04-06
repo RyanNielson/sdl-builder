@@ -58,6 +58,19 @@ jobs:
           mkdir -p out
           cp ${{github.workspace}}/sdl3-install/lib/${{matrix.sdl_lib}} out/
           cp ${{github.workspace}}/sdl-image-install/lib/${{matrix.sdl_image_lib}} out/
+      - name: Fix macOS dylib paths
+        if: ${{ runner.os == 'macOS' }}
+        shell: bash
+        run: |
+          # Fix SDL3's install name
+          install_name_tool -id @loader_path/${{matrix.sdl_lib}} out/${{matrix.sdl_lib}}
+
+          # Fix SDL_image's install name
+          install_name_tool -id @loader_path/${{matrix.sdl_image_lib}} out/${{matrix.sdl_image_lib}}
+
+          # Fix SDL_image's reference to SDL3
+          OLD_SDL_PATH=$(otool -L out/${{matrix.sdl_image_lib}} | grep libSDL3.0 | head -1 | awk '{print $1}')
+          install_name_tool -change "$OLD_SDL_PATH" @loader_path/${{matrix.sdl_lib}} out/${{matrix.sdl_image_lib}}
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
         with:
