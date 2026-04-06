@@ -52,20 +52,6 @@ jobs:
             $CMAKE_EXTRA_ARGS
           cmake --build build-image --config Release
           cmake --install build-image --prefix ${{github.workspace}}/sdl-image-install
-      - name: List built files
-        shell: bash
-        run: |
-          echo "=== SDL3 build ==="
-          find build -name "*SDL3*" -type f
-          echo "=== SDL_image build ==="
-          find build-image -name "*SDL3_image*" -type f
-      - name: List install contents
-        shell: bash
-        run: |
-          echo "=== SDL3 install ==="
-          ls -la ${{github.workspace}}/sdl3-install/lib/
-          echo "=== SDL_image install ==="
-          ls -la ${{github.workspace}}/sdl-image-install/lib/
       - name: Collect Artifacts
         shell: bash
         run: | 
