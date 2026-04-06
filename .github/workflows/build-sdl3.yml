@@ -45,9 +45,8 @@ jobs:
           cmake -B build-image -S sdl-image \
             -DCMAKE_BUILD_TYPE=Release \
             -DSDL3_DIR=${{github.workspace}}/sdl3-install/lib/cmake/SDL3 \
-            -DSDLIMAGE_SHARED=ON \
-            -DSDLIMAGE_STATIC=OFF \
             -DSDLIMAGE_VENDORED=ON \
+            -DSDLIMAGE_DEPS_SHARED=OFF \
             -DSDLIMAGE_TESTS=OFF \
             -DSDLIMAGE_AVIF=OFF \
             $CMAKE_EXTRA_ARGS
@@ -72,7 +71,7 @@ jobs:
         run: | 
           mkdir -p out
           cp ${{github.workspace}}/sdl3-install/lib/${{matrix.sdl_lib}} out/
-          cp ${{github.workspace}}/sdl-image-install/lib/${{matrix.img_lib}} out/
+          cp ${{github.workspace}}/sdl-image-install/lib/${{matrix.sdl_image_lib}} out/
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
         with:
