@@ -28,7 +28,7 @@ jobs:
       - name: Build SDL3
         shell: bash
         run: |
-          cmake -B build -S sdl3 \
+          cmake -B build -S sdl \
             -DCMAKE_BUILD_TYPE=Release \
             -DSDL_TEST_LIBRARY=OFF \
             -DSDL_SHARED=ON \
