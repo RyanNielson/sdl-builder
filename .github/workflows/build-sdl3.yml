@@ -46,6 +46,7 @@ jobs:
             -DSDLIMAGE_STATIC=OFF \
             -DSDLIMAGE_VENDORED=ON \
             -DSDLIMAGE_TESTS=OFF \
+            -DSDLIMAGE_AVIF=OFF \
             $CMAKE_EXTRA_ARGS
           cmake --build build-image --config Release
       - name: Collect Artifacts
