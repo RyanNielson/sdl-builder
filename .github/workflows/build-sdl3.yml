@@ -3,6 +3,9 @@ name: Build Libs
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   SDL_VERSION: release-3.4.4
   SDL_IMAGE_VERSION: release-3.4.2
