@@ -24,7 +24,7 @@ jobs:
         run: git clone --depth 1 --branch ${{env.SDL_IMAGE_VERSION}} --recurse-submodules https://github.com/libsdl-org/SDL_image sdl-image
       - name: Setup macOS universal build
         if: ${{ runner.os == 'macOS' }}
-        run: echo "CMAKE_EXTRA_ARGS=-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" >> $GITHUB_ENV
+        run: echo "CMAKE_EXTRA_ARGS=-DCMAKE_OSX_ARCHITECTURES=arm64" >> $GITHUB_ENV
       - name: Build SDL3
         shell: bash
         run: |
