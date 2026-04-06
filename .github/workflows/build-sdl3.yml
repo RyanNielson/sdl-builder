@@ -52,6 +52,7 @@ jobs:
             -DSDLIMAGE_AVIF=OFF \
             $CMAKE_EXTRA_ARGS
           cmake --build build-image --config Release
+          cmake --install build-image --prefix ${{github.workspace}}/sdl-image-install
       - name: List built files
         shell: bash
         run: |
@@ -63,8 +64,8 @@ jobs:
         shell: bash
         run: | 
           mkdir -p out
-          find build -name "${{matrix.sdl_lib}}" -exec cp {} out/ \;
-          find build -name "${{matrix.sdl_image_lib}}" -exec cp {} out/ \;
+          cp ${{github.workspace}}/sdl3-install/lib/${{matrix.sdl_lib}} out/
+          cp ${{github.workspace}}/sdl-image-install/lib/${{matrix.img_lib}} out/
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
         with:
