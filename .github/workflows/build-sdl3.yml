@@ -19,12 +19,31 @@ jobs:
             target: osx
             sdl_lib: libSDL3.dylib
             sdl_image_lib: libSDL3_image.dylib
+          - os: ubuntu-latest
+            target: linux
+            sdl_lib: libSDL3.so
+            sdl_image_lib: libSDL3_image.so
+          - os: windows-latest
+            target: windows
+            sdl_lib: SDL3.dll
+            sdl_image_lib: SDL3_image.dll
     runs-on: ${{matrix.os}}
     steps:
       - name: Clone SDL3
         run: git clone --depth 1 --branch ${{env.SDL_VERSION}} https://github.com/libsdl-org/sdl sdl
       - name: Clone SDL_image
         run: git clone --depth 1 --branch ${{env.SDL_IMAGE_VERSION}} --recurse-submodules https://github.com/libsdl-org/SDL_image sdl-image
+      - name: Install Linux dependencies
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git make \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev \
+            libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev
       - name: Setup macOS universal build
         if: ${{ runner.os == 'macOS' }}
         run: echo "CMAKE_EXTRA_ARGS=-DCMAKE_OSX_ARCHITECTURES=arm64" >> $GITHUB_ENV
@@ -52,12 +71,20 @@ jobs:
             $CMAKE_EXTRA_ARGS
           cmake --build build-image --config Release
           cmake --install build-image --prefix ${{github.workspace}}/sdl-image-install
-      - name: Collect Artifacts
+      - name: Collect Artifacts (Unix)
+        if: ${{ runner.os != 'Windows' }}
         shell: bash
-        run: | 
+        run: |
           mkdir -p out
           cp ${{github.workspace}}/sdl3-install/lib/${{matrix.sdl_lib}} out/
           cp ${{github.workspace}}/sdl-image-install/lib/${{matrix.sdl_image_lib}} out/
+      - name: Collect Artifacts (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          mkdir -p out
+          cp ${{github.workspace}}/sdl3-install/bin/${{matrix.sdl_lib}} out/
+          cp ${{github.workspace}}/sdl-image-install/bin/${{matrix.sdl_image_lib}} out/
       - name: Fix macOS dylib paths
         if: ${{ runner.os == 'macOS' }}
         shell: bash
