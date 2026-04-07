@@ -63,7 +63,7 @@ jobs:
         run: |
           cmake -B build-image -S sdl-image \
             -DCMAKE_BUILD_TYPE=Release \
-            -DSDL3_DIR=${{github.workspace}}/sdl3-install/lib/cmake/SDL3 \
+            -DCMAKE_PREFIX_PATH=${{github.workspace}}/sdl3-install \
             -DSDLIMAGE_VENDORED=ON \
             -DSDLIMAGE_DEPS_SHARED=OFF \
             -DSDLIMAGE_TESTS=OFF \
