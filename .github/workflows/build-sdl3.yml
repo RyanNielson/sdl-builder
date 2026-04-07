@@ -52,6 +52,7 @@ jobs:
         run: echo "CMAKE_EXTRA_ARGS=-DCMAKE_OSX_ARCHITECTURES=arm64" >> $GITHUB_ENV
       - name: Setup Windows generator
         if: ${{ runner.os == 'Windows' }}
+        shell: bash
         run: echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
       - name: Build SDL3
         shell: bash
