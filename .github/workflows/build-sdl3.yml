@@ -58,12 +58,17 @@ jobs:
             $CMAKE_EXTRA_ARGS
           cmake --build build --config Release
           cmake --install build --prefix ${{github.workspace}}/sdl3-install
+      - name: Find SDL3 cmake config
+        shell: bash
+        run: |
+          SDL3_DIR=$(dirname "$(find ${{github.workspace}}/sdl3-install -name SDL3Config.cmake)")
+          echo "SDL3_DIR=$SDL3_DIR" >> $GITHUB_ENV
       - name: Build SDL_image
         shell: bash
         run: |
           cmake -B build-image -S sdl-image \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH=${{github.workspace}}/sdl3-install \
+            -DSDL3_DIR=$SDL3_DIR \
             -DSDLIMAGE_VENDORED=ON \
             -DSDLIMAGE_DEPS_SHARED=OFF \
             -DSDLIMAGE_TESTS=OFF \
