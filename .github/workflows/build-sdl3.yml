@@ -19,14 +19,17 @@ jobs:
             target: osx
             sdl_lib: libSDL3.dylib
             sdl_image_lib: libSDL3_image.dylib
+            sdl_cmake_dir: lib/cmake/SDL3
           - os: ubuntu-latest
             target: linux
             sdl_lib: libSDL3.so
             sdl_image_lib: libSDL3_image.so
+            sdl_cmake_dir: lib/cmake/SDL3
           - os: windows-latest
             target: windows
             sdl_lib: SDL3.dll
             sdl_image_lib: SDL3_image.dll
+            sdl_cmake_dir: cmake
     runs-on: ${{matrix.os}}
     steps:
       - name: Clone SDL3
@@ -58,17 +61,12 @@ jobs:
             $CMAKE_EXTRA_ARGS
           cmake --build build --config Release
           cmake --install build --prefix ${{github.workspace}}/sdl3-install
-      - name: Find SDL3 cmake config
-        shell: bash
-        run: |
-          SDL3_DIR=$(dirname "$(find ${{github.workspace}}/sdl3-install -name SDL3Config.cmake)")
-          echo "SDL3_DIR=$SDL3_DIR" >> $GITHUB_ENV
       - name: Build SDL_image
         shell: bash
         run: |
           cmake -B build-image -S sdl-image \
             -DCMAKE_BUILD_TYPE=Release \
-            -DSDL3_DIR=$SDL3_DIR \
+            -DSDL3_DIR=${{github.workspace}}/sdl3-install/${{matrix.sdl_cmake_dir}} \
             -DSDLIMAGE_VENDORED=ON \
             -DSDLIMAGE_DEPS_SHARED=OFF \
             -DSDLIMAGE_TESTS=OFF \
