@@ -1,4 +1,4 @@
-name: Build Libs
+name: Build SDL3 Libs
 
 on:
   workflow_dispatch:
@@ -72,7 +72,7 @@ jobs:
           OLD_SDL_PATH=$(otool -L out/${{matrix.sdl_image_lib}} | grep libSDL3.0 | head -1 | awk '{print $1}')
           install_name_tool -change "$OLD_SDL_PATH" @loader_path/${{matrix.sdl_lib}} out/${{matrix.sdl_image_lib}}
       - name: Publish Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{matrix.target}}
           path: out/
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download libs
         uses: actions/download-artifact@v4
         with:
