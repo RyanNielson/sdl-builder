@@ -98,11 +98,11 @@ jobs:
           cp ${{github.workspace}}/sdl-image-install/lib/${{matrix.sdl_image_lib}} out/
       - name: Collect Artifacts (Windows)
         if: ${{ runner.os == 'Windows' }}
-        shell: bash
+        shell: cmd
         run: |
-          mkdir -p out
-          cp ${{github.workspace}}/sdl3-install/bin/${{matrix.sdl_lib}} out/
-          cp ${{github.workspace}}/sdl-image-install/bin/${{matrix.sdl_image_lib}} out/
+          mkdir out
+          copy ${{github.workspace}}\sdl3-install\bin\${{matrix.sdl_lib}} out\
+          copy ${{github.workspace}}\sdl-image-install\bin\${{matrix.sdl_image_lib}} out\
       - name: Fix macOS dylib paths
         if: ${{ runner.os == 'macOS' }}
         shell: bash
