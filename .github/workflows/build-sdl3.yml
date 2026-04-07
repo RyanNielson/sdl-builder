@@ -19,17 +19,14 @@ jobs:
             target: osx
             sdl_lib: libSDL3.dylib
             sdl_image_lib: libSDL3_image.dylib
-            sdl_cmake_dir: lib/cmake/SDL3
           - os: ubuntu-latest
             target: linux
             sdl_lib: libSDL3.so
             sdl_image_lib: libSDL3_image.so
-            sdl_cmake_dir: lib/cmake/SDL3
           - os: windows-latest
             target: windows
             sdl_lib: SDL3.dll
             sdl_image_lib: SDL3_image.dll
-            sdl_cmake_dir: cmake
     runs-on: ${{matrix.os}}
     steps:
       - name: Clone SDL3
@@ -50,10 +47,14 @@ jobs:
       - name: Setup macOS universal build
         if: ${{ runner.os == 'macOS' }}
         run: echo "CMAKE_EXTRA_ARGS=-DCMAKE_OSX_ARCHITECTURES=arm64" >> $GITHUB_ENV
-      - name: Setup Windows generator
+      - name: Setup Windows build
         if: ${{ runner.os == 'Windows' }}
-        shell: bash
-        run: echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          echo CMAKE_GENERATOR=Ninja>> "%GITHUB_ENV%"
+          echo CC=cl>> "%GITHUB_ENV%"
+          echo CXX=cl>> "%GITHUB_ENV%"
       - name: Build SDL3
         shell: bash
         run: |
@@ -70,7 +71,7 @@ jobs:
         run: |
           cmake -B build-image -S sdl-image \
             -DCMAKE_BUILD_TYPE=Release \
-            -DSDL3_DIR=${{github.workspace}}/sdl3-install/${{matrix.sdl_cmake_dir}} \
+            -DCMAKE_PREFIX_PATH=${{github.workspace}}/sdl3-install \
             -DSDLIMAGE_VENDORED=ON \
             -DSDLIMAGE_DEPS_SHARED=OFF \
             -DSDLIMAGE_TESTS=OFF \
