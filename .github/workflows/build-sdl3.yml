@@ -50,6 +50,9 @@ jobs:
       - name: Setup macOS universal build
         if: ${{ runner.os == 'macOS' }}
         run: echo "CMAKE_EXTRA_ARGS=-DCMAKE_OSX_ARCHITECTURES=arm64" >> $GITHUB_ENV
+      - name: Setup Windows build
+        if: ${{ runner.os == 'Windows' }}
+        run: echo "CMAKE_EXTRA_ARGS=-G Ninja" >> $GITHUB_ENV
       - name: Build SDL3
         shell: bash
         run: |
