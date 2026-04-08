@@ -103,6 +103,8 @@ jobs:
           mkdir out
           copy ${{github.workspace}}\sdl3-install\bin\${{matrix.sdl_lib}} out\
           copy ${{github.workspace}}\sdl-image-install\bin\${{matrix.sdl_image_lib}} out\
+          copy ${{github.workspace}}\sdl3-install\lib\SDL3.lib out\
+          copy ${{github.workspace}}\sdl-image-install\lib\SDL3_image.lib out\
       - name: Fix macOS dylib paths
         if: ${{ runner.os == 'macOS' }}
         shell: bash
