@@ -47,7 +47,7 @@ jobs:
         run: |
           mkdir bin
           odin build game -target:windows_amd64 -extra-linker-flags:"/LIBPATH:libs/windows" -out:bin/game.exe
-          copy libs\windows\* bin\
+          copy libs\windows\*.dll bin\
       - name: Publish Artifact
         uses: actions/upload-artifact@v6
         with:
