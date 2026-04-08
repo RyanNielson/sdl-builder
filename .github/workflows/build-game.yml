@@ -12,7 +12,7 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            target: osx
+            target: darwin
             lib_dir: osx
             odin_arch: arm64
             linker_flags: "-L./libs/osx"
