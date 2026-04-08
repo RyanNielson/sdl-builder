@@ -16,6 +16,7 @@ main :: proc() {
 		return
 	}
 	defer sdl.DestroyWindow(window)
+	sdl.ShowWindow(window)
 
 	running := true
 	for running {
