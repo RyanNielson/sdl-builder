@@ -18,6 +18,8 @@ main :: proc() {
 	defer sdl.DestroyWindow(window)
 	sdl.ShowWindow(window)
 
+	surface := sdl.GetWindowSurface(window)
+
 	running := true
 	for running {
 		event: sdl.Event
@@ -27,5 +29,7 @@ main :: proc() {
 				running = false
 			}
 		}
+		sdl.FillSurfaceRect(surface, nil, sdl.MapSurfaceRGB(surface, 255, 255, 40))
+		sdl.UpdateWindowSurface(window)
 	}
 }
