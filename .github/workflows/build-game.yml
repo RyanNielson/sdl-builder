@@ -20,7 +20,7 @@ jobs:
             target: linux
             lib_dir: linux
             odin_arch: amd64
-            linker_flags: "-L./libs/linux -Wl,-rpath,\\$ORIGIN"
+            linker_flags: "-L./libs/linux"
           - os: windows-latest
             target: windows
             lib_dir: windows
@@ -41,6 +41,9 @@ jobs:
           mkdir -p bin
           odin build game -target:${{matrix.target}}_${{matrix.odin_arch}} -extra-linker-flags:"${{matrix.linker_flags}}" -out:bin/game
           cp libs/${{matrix.lib_dir}}/* bin/
+      - name: Set rpath (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: patchelf --set-rpath '$ORIGIN' bin/game
       - name: Build game (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: cmd
