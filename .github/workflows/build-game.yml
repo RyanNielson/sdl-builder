@@ -20,7 +20,7 @@ jobs:
             target: linux
             lib_dir: linux
             odin_arch: amd64
-            linker_flags: "-L./libs/linux"
+            linker_flags: "-L./libs/linux -Wl,-rpath,'$ORIGIN'"
           - os: windows-latest
             target: windows
             lib_dir: windows
