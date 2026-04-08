@@ -1,0 +1,55 @@
+name: Build Game
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  Build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: osx
+            lib_dir: osx
+            odin_arch: arm64
+            linker_flags: "-L./libs/osx"
+          - os: ubuntu-latest
+            target: linux
+            lib_dir: linux
+            odin_arch: amd64
+            linker_flags: "-L./libs/linux"
+          - os: windows-latest
+            target: windows
+            lib_dir: windows
+            odin_arch: amd64
+            linker_flags: "/LIBPATH:libs/windows"
+    runs-on: ${{matrix.os}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install Odin
+        uses: laytan/setup-odin@v2
+        with:
+          token: ${{secrets.GITHUB_TOKEN}}
+      - name: Build game (Unix)
+        if: ${{ runner.os != 'Windows' }}
+        shell: bash
+        run: |
+          mkdir -p bin
+          odin build game -target:${{matrix.target}}_${{matrix.odin_arch}} -extra-linker-flags:"${{matrix.linker_flags}}" -out:bin/game
+          cp libs/${{matrix.lib_dir}}/* bin/
+      - name: Build game (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: cmd
+        run: |
+          mkdir bin
+          odin build game -target:windows_amd64 -extra-linker-flags:"/LIBPATH:libs/windows" -out:bin/game.exe
+          copy libs\windows\* bin\
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: game-${{matrix.target}}
+          path: bin/
