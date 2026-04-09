@@ -6,14 +6,16 @@ public class Game : IDisposable
 {
     private const int WindowWidth = 800;
     private const int WindowHeight = 600;
+    private const int TargetWidth = 128;
+    private const int TargetHeight = 128;
     private const int GridColumns = 4;
     private const int GridRows = 4;
-    private const float CardPadding = 12f;
-    private const float GridAreaWidth = 700f;
-    private const float GridAreaHeight = 500f;
+    private const float CardPadding = 2f;
+    private const float GridAreaWidth = 112f;
+    private const float GridAreaHeight = 112f;
 
-    private static readonly float GridOffsetX = (WindowWidth - GridAreaWidth) / 2f;
-    private static readonly float GridOffsetY = (WindowHeight - GridAreaHeight) / 2f;
+    private static readonly float GridOffsetX = (TargetWidth - GridAreaWidth) / 2f;
+    private static readonly float GridOffsetY = (TargetHeight - GridAreaHeight) / 2f;
     private static readonly float CardWidth = (GridAreaWidth - (GridColumns + 1) * CardPadding) / GridColumns;
     private static readonly float CardHeight = (GridAreaHeight - (GridRows + 1) * CardPadding) / GridRows;
 
@@ -46,7 +48,7 @@ public class Game : IDisposable
         }
 
         window = new Window(sdlWindow);
-        renderer = new Renderer(sdlRenderer, WindowWidth, WindowHeight);
+        renderer = new Renderer(sdlRenderer, TargetWidth, TargetHeight);
 
         cards = CreateCards();
     }
