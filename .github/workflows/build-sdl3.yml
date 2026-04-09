@@ -133,7 +133,7 @@ jobs:
       - name: Download libs
         uses: actions/download-artifact@v8
         with:
-          path: .
+          path: Examples/Memory
           merge-multiple: true
       - name: Commit changes
         run: |
