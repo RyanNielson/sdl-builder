@@ -12,47 +12,23 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            target: darwin
-            lib_dir: osx
-            odin_arch: arm64
-            linker_flags: "-L./libs/osx"
+            rid: osx-arm64
           - os: ubuntu-latest
-            target: linux
-            lib_dir: linux
-            odin_arch: amd64
-            linker_flags: "-L./libs/linux"
+            rid: linux-x64
           - os: windows-latest
-            target: windows
-            lib_dir: windows
-            odin_arch: amd64
-            linker_flags: "/LIBPATH:libs/windows"
+            rid: win-x64
     runs-on: ${{matrix.os}}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Install Odin
-        uses: laytan/setup-odin@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
         with:
-          token: ${{secrets.GITHUB_TOKEN}}
-      - name: Build game (Unix)
-        if: ${{ runner.os != 'Windows' }}
-        shell: bash
-        run: |
-          mkdir -p bin
-          odin build game -target:${{matrix.target}}_${{matrix.odin_arch}} -extra-linker-flags:"${{matrix.linker_flags}}" -out:bin/game
-          cp libs/${{matrix.lib_dir}}/* bin/
-      - name: Set rpath (Linux)
-        if: ${{ runner.os == 'Linux' }}
-        run: patchelf --set-rpath '$ORIGIN' bin/game
-      - name: Build game (Windows)
-        if: ${{ runner.os == 'Windows' }}
-        shell: cmd
-        run: |
-          mkdir bin
-          odin build game -target:windows_amd64 -extra-linker-flags:"/LIBPATH:libs/windows" -out:bin/game.exe
-          copy libs\windows\*.dll bin\
+          dotnet-version: '10.0.x'
+      - name: Publish
+        run: dotnet publish -r ${{matrix.rid}} -c Release --self-contained -p:PublishSingleFile=true -p:DebugType=none Examples/Memory
       - name: Publish Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: game-${{matrix.target}}
-          path: bin/
+          name: Memory-${{matrix.rid}}
+          path: Examples/Memory/bin/Release/net10.0/${{matrix.rid}}/publish/
