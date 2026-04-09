@@ -16,15 +16,15 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            target: osx
+            rid: osx-arm64
             sdl_lib: libSDL3.dylib
             sdl_image_lib: libSDL3_image.dylib
           - os: ubuntu-latest
-            target: linux
+            rid: linux-x64
             sdl_lib: libSDL3.so
             sdl_image_lib: libSDL3_image.so
           - os: windows-latest
-            target: windows
+            rid: win-x64
             sdl_lib: SDL3.dll
             sdl_image_lib: SDL3_image.dll
     runs-on: ${{matrix.os}}
@@ -93,35 +93,35 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         shell: bash
         run: |
-          mkdir -p out
-          cp ${{github.workspace}}/sdl3-install/lib/${{matrix.sdl_lib}} out/
-          cp ${{github.workspace}}/sdl-image-install/lib/${{matrix.sdl_image_lib}} out/
+          mkdir -p out/runtimes/${{matrix.rid}}/native
+          cp ${{github.workspace}}/sdl3-install/lib/${{matrix.sdl_lib}} out/runtimes/${{matrix.rid}}/native/
+          cp ${{github.workspace}}/sdl-image-install/lib/${{matrix.sdl_image_lib}} out/runtimes/${{matrix.rid}}/native/
       - name: Collect Artifacts (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: cmd
         run: |
-          mkdir out
-          copy ${{github.workspace}}\sdl3-install\bin\${{matrix.sdl_lib}} out\
-          copy ${{github.workspace}}\sdl-image-install\bin\${{matrix.sdl_image_lib}} out\
-          copy ${{github.workspace}}\sdl3-install\lib\SDL3.lib out\
-          copy ${{github.workspace}}\sdl-image-install\lib\SDL3_image.lib out\
+          mkdir out\runtimes\${{matrix.rid}}\native
+          copy ${{github.workspace}}\sdl3-install\bin\${{matrix.sdl_lib}} out\runtimes\${{matrix.rid}}\native\
+          copy ${{github.workspace}}\sdl-image-install\bin\${{matrix.sdl_image_lib}} out\runtimes\${{matrix.rid}}\native\
       - name: Fix macOS dylib paths
         if: ${{ runner.os == 'macOS' }}
         shell: bash
         run: |
+          NATIVE_DIR=out/runtimes/${{matrix.rid}}/native
+
           # Fix SDL3's install name
-          install_name_tool -id @loader_path/${{matrix.sdl_lib}} out/${{matrix.sdl_lib}}
+          install_name_tool -id @loader_path/${{matrix.sdl_lib}} $NATIVE_DIR/${{matrix.sdl_lib}}
 
           # Fix SDL_image's install name
-          install_name_tool -id @loader_path/${{matrix.sdl_image_lib}} out/${{matrix.sdl_image_lib}}
+          install_name_tool -id @loader_path/${{matrix.sdl_image_lib}} $NATIVE_DIR/${{matrix.sdl_image_lib}}
 
           # Fix SDL_image's reference to SDL3
-          OLD_SDL_PATH=$(otool -L out/${{matrix.sdl_image_lib}} | grep libSDL3.0 | head -1 | awk '{print $1}')
-          install_name_tool -change "$OLD_SDL_PATH" @loader_path/${{matrix.sdl_lib}} out/${{matrix.sdl_image_lib}}
+          OLD_SDL_PATH=$(otool -L $NATIVE_DIR/${{matrix.sdl_image_lib}} | grep libSDL3.0 | head -1 | awk '{print $1}')
+          install_name_tool -change "$OLD_SDL_PATH" @loader_path/${{matrix.sdl_lib}} $NATIVE_DIR/${{matrix.sdl_image_lib}}
       - name: Publish Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{matrix.target}}
+          name: ${{matrix.rid}}
           path: out/
   UpdateLibs:
     if: github.ref == 'refs/heads/main'
@@ -133,7 +133,8 @@ jobs:
       - name: Download libs
         uses: actions/download-artifact@v8
         with:
-          path: libs
+          path: .
+          merge-multiple: true
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"

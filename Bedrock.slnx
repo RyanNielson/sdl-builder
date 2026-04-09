@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/Examples/" />
+  <Folder Name="/Examples/Memory/">
+    <Project Path="Examples/Memory/Bedrock.Examples.Memory.csproj" />
+  </Folder>
+</Solution>
