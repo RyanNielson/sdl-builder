@@ -16,7 +16,11 @@ public class MemoryScene : Scene
         new(220, 100, 160),  // Pink
     ];
 
+    private const double FlipBackDelay = 600;
+    private const double MatchRemoveDelay = 400;
+
     private readonly List<ActorHandle> cardHandles = new();
+    private readonly Queue<(ActorHandle first, ActorHandle second, double removeTime)> pendingRemovals = new();
     private ActorHandle firstPick = ActorHandle.Invalid;
     private ActorHandle secondPick = ActorHandle.Invalid;
     private double flipBackTime;
@@ -58,6 +62,15 @@ public class MemoryScene : Scene
             firstPick = ActorHandle.Invalid;
             secondPick = ActorHandle.Invalid;
         }
+
+        while (pendingRemovals.TryPeek(out var pending) && SDL.GetTicks() >= pending.removeTime)
+        {
+            pendingRemovals.Dequeue();
+            Destroy(pending.first);
+            Destroy(pending.second);
+            cardHandles.Remove(pending.first);
+            cardHandles.Remove(pending.second);
+        }
     }
 
     protected override void OnMouseClick(float targetX, float targetY)
@@ -73,7 +86,7 @@ public class MemoryScene : Scene
             }
         }
 
-        if (clicked == null || clicked.IsFaceUp || clicked.IsMatched)
+        if (clicked == null || clicked.IsFaceUp)
             return;
 
         if (GetActor<Card>(secondPick) != null)
@@ -92,14 +105,13 @@ public class MemoryScene : Scene
 
             if (first.Color.Equals(clicked.Color))
             {
-                first.IsMatched = true;
-                clicked.IsMatched = true;
+                pendingRemovals.Enqueue((firstPick, secondPick, SDL.GetTicks() + MatchRemoveDelay));
                 firstPick = ActorHandle.Invalid;
                 secondPick = ActorHandle.Invalid;
             }
             else
             {
-                flipBackTime = SDL.GetTicks() + 600;
+                flipBackTime = SDL.GetTicks() + FlipBackDelay;
             }
         }
     }

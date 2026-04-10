@@ -19,7 +19,6 @@ public class Card : Actor
     public int GridY { get; }
     public Color Color { get; }
     public bool IsFaceUp { get; set; }
-    public bool IsMatched { get; set; }
 
     public float X => gridOffsetX + CardPadding + GridX * (cardWidth + CardPadding);
     public float Y => gridOffsetY + CardPadding + GridY * (cardHeight + CardPadding);
