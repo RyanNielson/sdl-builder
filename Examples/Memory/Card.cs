@@ -6,6 +6,7 @@ public class Card
     public int GridY { get; }
     public Color Color { get; }
     public bool IsFaceUp { get; set; }
+    public bool IsMatched { get; set; }
 
     public Card(int gridX, int gridY, Color color)
     {

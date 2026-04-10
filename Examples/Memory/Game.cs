@@ -35,6 +35,9 @@ public class Game : IDisposable
     private readonly Renderer renderer;
     private readonly List<Card> cards;
     private bool running;
+    private Card? firstPick;
+    private Card? secondPick;
+    private double flipBackTime;
 
     public Game()
     {
@@ -73,14 +76,68 @@ public class Game : IDisposable
         for (int i = 0; i < colorIndices.Count; i++)
         {
             var color = Colors[colorIndices[i]];
-            var card = new Card(i % 4, i / 4, color)
-            {
-                IsFaceUp = true
-            };
+            var card = new Card(i % 4, i / 4, color);
             cards.Add(card);
         }
 
         return cards;
+    }
+
+    private Card? GetCardAtTarget(float targetX, float targetY)
+    {
+        foreach (var card in cards)
+        {
+            float x = GridOffsetX + CardPadding + card.GridX * (CardWidth + CardPadding);
+            float y = GridOffsetY + CardPadding + card.GridY * (CardHeight + CardPadding);
+
+            if (targetX >= x && targetX < x + CardWidth && targetY >= y && targetY < y + CardHeight)
+                return card;
+        }
+
+        return null;
+    }
+
+    private void OnCardClicked(Card card)
+    {
+        if (card.IsFaceUp || card.IsMatched)
+            return;
+
+        if (secondPick != null)
+            return;
+
+        card.IsFaceUp = true;
+
+        if (firstPick == null)
+        {
+            firstPick = card;
+        }
+        else
+        {
+            secondPick = card;
+
+            if (firstPick.Color.Equals(secondPick.Color))
+            {
+                firstPick.IsMatched = true;
+                secondPick.IsMatched = true;
+                firstPick = null;
+                secondPick = null;
+            }
+            else
+            {
+                flipBackTime = SDL.GetTicks() + 600;
+            }
+        }
+    }
+
+    private void Update()
+    {
+        if (secondPick != null && SDL.GetTicks() >= flipBackTime)
+        {
+            firstPick!.IsFaceUp = false;
+            secondPick.IsFaceUp = false;
+            firstPick = null;
+            secondPick = null;
+        }
     }
 
     private void DrawCard(Card card)
@@ -104,7 +161,18 @@ public class Game : IDisposable
             {
                 if ((SDL.EventType)e.Type == SDL.EventType.Quit)
                     running = false;
+
+                if ((SDL.EventType)e.Type == SDL.EventType.MouseButtonDown)
+                {
+                    var (winWidth, winHeight) = window.Size;
+                    var (tx, ty) = renderer.WindowToTarget(winWidth, winHeight, e.Button.X, e.Button.Y);
+                    var card = GetCardAtTarget(tx, ty);
+                    if (card != null)
+                        OnCardClicked(card);
+                }
             }
+
+            Update();
 
             renderer.BeginFrame(new Color(30, 30, 30));
             foreach (var card in cards)

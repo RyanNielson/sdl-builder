@@ -47,6 +47,19 @@ public class Renderer : IDisposable
         SDL.RenderPresent(sdlRenderer);
     }
 
+    public (float x, float y) WindowToTarget(int windowWidth, int windowHeight, float windowX, float windowY)
+    {
+        float scale = Math.Min((float)windowWidth / renderTarget.Width, (float)windowHeight / renderTarget.Height);
+        float scaledWidth = renderTarget.Width * scale;
+        float scaledHeight = renderTarget.Height * scale;
+        float offsetX = (windowWidth - scaledWidth) / 2f;
+        float offsetY = (windowHeight - scaledHeight) / 2f;
+
+        float targetX = (windowX - offsetX) / scale;
+        float targetY = (windowY - offsetY) / scale;
+        return (targetX, targetY);
+    }
+
     public void DrawRect(float x, float y, float w, float h, Color color)
     {
         pixelTexture.SetColorMod(color.R, color.G, color.B);
