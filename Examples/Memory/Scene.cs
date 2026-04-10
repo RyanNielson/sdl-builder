@@ -5,7 +5,8 @@ public abstract class Scene
     private readonly List<Actor?> actors = new();
     private readonly List<int> generations = new();
     private readonly Queue<int> freeSlots = new();
-
+    private readonly List<ActorHandle> pendingActivations = new();
+    private readonly List<ActorHandle> pendingDespawns = new();
 
     public abstract void Start();
 
@@ -26,11 +27,13 @@ public abstract class Scene
 
         var handle = new ActorHandle(slot, generations[slot]);
         actor.Handle = handle;
+        actor.IsStarted = false;
         actors[slot] = actor;
+        pendingActivations.Add(handle);
         return handle;
     }
 
-    public void Destroy(ActorHandle handle)
+    public void Despawn(ActorHandle handle)
     {
         if (!handle.IsValid || handle.Id >= actors.Count)
             return;
@@ -38,9 +41,7 @@ public abstract class Scene
         if (generations[handle.Id] != handle.Generation)
             return;
 
-        actors[handle.Id] = null;
-        generations[handle.Id]++;
-        freeSlots.Enqueue(handle.Id);
+        pendingDespawns.Add(handle);
     }
 
     public T? GetActor<T>(ActorHandle handle) where T : Actor
@@ -54,21 +55,71 @@ public abstract class Scene
         return actors[handle.Id] as T;
     }
 
+    private void ProcessPendingActivations()
+    {
+        // Snapshot count: actors spawned during OnStart get activated next frame, not this one.
+        int count = pendingActivations.Count;
+        for (int i = 0; i < count; i++)
+        {
+            var handle = pendingActivations[i];
+
+            if (generations[handle.Id] != handle.Generation)
+                continue;
+
+            var actor = actors[handle.Id];
+            if (actor == null)
+                continue;
+
+            actor.IsStarted = true;
+            actor.OnStart(this);
+        }
+
+        pendingActivations.RemoveRange(0, count);
+    }
+
+    private void ProcessPendingDespawns()
+    {
+        for (int i = 0; i < pendingDespawns.Count; i++)
+        {
+            var handle = pendingDespawns[i];
+
+            if (generations[handle.Id] != handle.Generation)
+                continue;
+
+            var actor = actors[handle.Id];
+            actor?.OnDespawn(this);
+
+            actors[handle.Id] = null;
+            generations[handle.Id]++;
+            freeSlots.Enqueue(handle.Id);
+        }
+
+        pendingDespawns.Clear();
+    }
+
     public void Update()
     {
+        ProcessPendingActivations();
+
         OnUpdate();
 
         for (int i = 0; i < actors.Count; i++)
         {
-            actors[i]?.Update(this);
+            var actor = actors[i];
+            if (actor != null && actor.IsStarted && actor.IsActive)
+                actor.Update(this);
         }
+
+        ProcessPendingDespawns();
     }
 
     public void Draw(Renderer renderer)
     {
         for (int i = 0; i < actors.Count; i++)
         {
-            actors[i]?.Draw(renderer);
+            var actor = actors[i];
+            if (actor != null && actor.IsStarted && actor.IsActive)
+                actor.Draw(renderer);
         }
     }
 

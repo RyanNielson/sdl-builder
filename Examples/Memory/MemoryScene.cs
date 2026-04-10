@@ -66,10 +66,8 @@ public class MemoryScene : Scene
         while (pendingRemovals.TryPeek(out var pending) && SDL.GetTicks() >= pending.removeTime)
         {
             pendingRemovals.Dequeue();
-            Destroy(pending.first);
-            Destroy(pending.second);
-            cardHandles.Remove(pending.first);
-            cardHandles.Remove(pending.second);
+            Despawn(pending.first);
+            Despawn(pending.second);
         }
     }
 
