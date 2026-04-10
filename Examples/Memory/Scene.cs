@@ -6,12 +6,6 @@ public abstract class Scene
     private readonly List<int> generations = new();
     private readonly Queue<int> freeSlots = new();
 
-    protected Renderer Renderer { get; }
-
-    protected Scene(Renderer renderer)
-    {
-        Renderer = renderer;
-    }
 
     public abstract void Start();
 
@@ -70,11 +64,11 @@ public abstract class Scene
         }
     }
 
-    public void Draw()
+    public void Draw(Renderer renderer)
     {
         for (int i = 0; i < actors.Count; i++)
         {
-            actors[i]?.Draw(Renderer);
+            actors[i]?.Draw(renderer);
         }
     }
 

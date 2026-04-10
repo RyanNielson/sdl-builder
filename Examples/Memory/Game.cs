@@ -4,31 +4,26 @@ using SDL3;
 
 public class Game : IDisposable
 {
-    private const int WindowWidth = 800;
-    private const int WindowHeight = 600;
-    private const int TargetWidth = 128;
-    private const int TargetHeight = 128;
-
     private readonly Window window;
     private readonly Renderer renderer;
     private readonly Scene scene;
     private bool running;
 
-    public Game()
+    public Game(GameConfig config, Scene scene)
     {
         if (!SDL.Init(SDL.InitFlags.Video))
             throw new Exception($"SDL init failed: {SDL.GetError()}");
 
-        if (!SDL.CreateWindowAndRenderer("Memory", WindowWidth, WindowHeight, SDL.WindowFlags.Resizable, out var sdlWindow, out var sdlRenderer))
+        if (!SDL.CreateWindowAndRenderer(config.Title, config.WindowWidth, config.WindowHeight, SDL.WindowFlags.Resizable, out var sdlWindow, out var sdlRenderer))
         {
             SDL.Quit();
             throw new Exception($"Window creation failed: {SDL.GetError()}");
         }
 
         window = new Window(sdlWindow);
-        renderer = new Renderer(sdlRenderer, TargetWidth, TargetHeight);
+        renderer = new Renderer(sdlRenderer, config.TargetWidth, config.TargetHeight);
 
-        scene = new MemoryScene(renderer);
+        this.scene = scene;
         scene.Start();
     }
 
@@ -54,7 +49,7 @@ public class Game : IDisposable
             scene.Update();
 
             renderer.BeginFrame(new Color(30, 30, 30));
-            scene.Draw();
+            scene.Draw(renderer);
             renderer.EndFrame();
         }
     }

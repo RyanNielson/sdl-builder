@@ -21,7 +21,7 @@ public class MemoryScene : Scene
     private ActorHandle secondPick = ActorHandle.Invalid;
     private double flipBackTime;
 
-    public MemoryScene(Renderer renderer) : base(renderer) { }
+    public MemoryScene() { }
 
     public override void Start()
     {
