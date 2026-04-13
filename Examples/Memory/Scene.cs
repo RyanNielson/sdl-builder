@@ -12,7 +12,7 @@ public abstract class Scene
     public Handle<Routine> StartCoroutine(IEnumerator routine) => coroutines.Start(routine);
     public void StopCoroutine(Handle<Routine> handle) => coroutines.Stop(handle);
 
-    public abstract void Start();
+    public abstract void Start(Renderer renderer);
 
     public Handle<Actor> Spawn(Actor actor)
     {
@@ -92,9 +92,13 @@ public abstract class Scene
             if (actor != null && actor.IsStarted && actor.IsActive)
                 actor.Draw(renderer);
         }
+
+        OnDraw(renderer);
     }
 
     protected virtual void OnUpdate() { }
+
+    protected virtual void OnDraw(Renderer renderer) { }
 
     protected virtual void OnMouseClick(float targetX, float targetY) { }
 

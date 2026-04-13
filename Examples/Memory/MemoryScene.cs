@@ -16,14 +16,21 @@ public class MemoryScene : Scene
         new(220, 100, 160),  // Pink
     ];
 
+    private const int TargetWidth = 128;
+    private const int TargetHeight = 128;
+
     private readonly List<Handle<Actor>> cardHandles = new();
     private Handle<Actor> firstPick = Handle<Actor>.Invalid;
     private int pendingPairs;
+    private int pairsRemaining;
+    private Font font = null!;
 
     public MemoryScene() { }
 
-    public override void Start()
+    public override void Start(Renderer renderer)
     {
+        font = renderer.LoadFont("assets/testfont.fnt");
+
         var colorIndices = new List<int>();
         for (int i = 0; i < Colors.Length; i++)
         {
@@ -40,10 +47,26 @@ public class MemoryScene : Scene
 
         for (int i = 0; i < colorIndices.Count; i++)
         {
-            var card = new Card(i % 4, i / 4, Colors[colorIndices[i]]);
+            int pairIndex = colorIndices[i];
+            char label = (char)('A' + pairIndex);
+            var card = new Card(i % 4, i / 4, Colors[pairIndex], label, font);
             var handle = Spawn(card);
             cardHandles.Add(handle);
         }
+
+        pairsRemaining = Colors.Length;
+    }
+
+    protected override void OnDraw(Renderer renderer)
+    {
+        if (pairsRemaining > 0)
+            return;
+
+        const string message = "YOU WIN!";
+        float textWidth = font.MeasureText(message);
+        float x = MathF.Floor((TargetWidth - textWidth) / 2f);
+        float y = MathF.Floor((TargetHeight - font.LineHeight) / 2f);
+        renderer.DrawTextOutlined(font, message, x, y, Color.White, new Color(20, 20, 20));
     }
 
     protected override void OnMouseClick(float targetX, float targetY)
@@ -96,6 +119,7 @@ public class MemoryScene : Scene
         Despawn(a);
         Despawn(b);
         pendingPairs--;
+        pairsRemaining--;
     }
 
     private IEnumerator FlipBackPair(Handle<Actor> a, Handle<Actor> b)

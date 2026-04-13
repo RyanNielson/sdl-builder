@@ -18,16 +18,20 @@ public class Card : Actor
     public int GridX { get; }
     public int GridY { get; }
     public Color Color { get; }
+    public char Label { get; }
+    public Font Font { get; }
     public bool IsFaceUp { get; set; }
 
     public float X => gridOffsetX + CardPadding + GridX * (cardWidth + CardPadding);
     public float Y => gridOffsetY + CardPadding + GridY * (cardHeight + CardPadding);
 
-    public Card(int gridX, int gridY, Color color)
+    public Card(int gridX, int gridY, Color color, char label, Font font)
     {
         GridX = gridX;
         GridY = gridY;
         Color = color;
+        Label = label;
+        Font = font;
     }
 
     public bool ContainsPoint(float px, float py)
@@ -44,6 +48,10 @@ public class Card : Actor
         if (IsFaceUp)
         {
             renderer.DrawRect(X, Y, cardWidth, cardHeight, Color);
+            string label = Label.ToString();
+            float labelX = MathF.Floor(X + (cardWidth - Font.MeasureText(label)) / 2f);
+            float labelY = MathF.Floor(Y + (cardHeight - Font.LineHeight) / 2f);
+            renderer.DrawTextOutlined(Font, label, labelX, labelY, new Color(20, 20, 20), Color.White);
         }
         else
         {

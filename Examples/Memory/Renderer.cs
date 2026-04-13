@@ -75,6 +75,43 @@ public class Renderer : IDisposable
         SDL.RenderTexture(sdlRenderer, pixelTexture.Handle, IntPtr.Zero, in dst);
     }
 
+    public Font LoadFont(string fntPath) => Font.Load(sdlRenderer, fntPath);
+
+    public void DrawTextOutlined(Font font, string text, float x, float y, Color fill, Color outline)
+    {
+        for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+                if (dx != 0 || dy != 0)
+                    DrawText(font, text, x + dx, y + dy, outline);
+
+        DrawText(font, text, x, y, fill);
+    }
+
+    public void DrawText(Font font, string text, float x, float y, Color color)
+    {
+        font.Texture.SetColorMod(color.R, color.G, color.B);
+        float cursorX = x;
+        foreach (char c in text)
+        {
+            if (!font.TryGetGlyph(c, out var g))
+                continue;
+
+            if (g.Source.W > 0 && g.Source.H > 0)
+            {
+                var src = g.Source;
+                var dst = new SDL.FRect
+                {
+                    X = cursorX + g.XOffset,
+                    Y = y + g.YOffset,
+                    W = g.Source.W,
+                    H = g.Source.H,
+                };
+                SDL.RenderTexture(sdlRenderer, font.Texture.Handle, in src, in dst);
+            }
+            cursorX += g.XAdvance;
+        }
+    }
+
     public void Dispose()
     {
         pixelTexture.Dispose();

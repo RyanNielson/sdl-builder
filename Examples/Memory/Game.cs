@@ -24,7 +24,7 @@ public class Game : IDisposable
         renderer = new Renderer(sdlRenderer, config.TargetWidth, config.TargetHeight);
 
         this.scene = scene;
-        scene.Start();
+        scene.Start(renderer);
     }
 
     public void Run()

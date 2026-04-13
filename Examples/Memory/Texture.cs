@@ -27,6 +27,19 @@ public class Texture : IDisposable
         return texture;
     }
 
+    public static Texture FromFile(IntPtr sdlRenderer, string path, SDL.ScaleMode scaleMode = SDL.ScaleMode.Nearest)
+    {
+        var resolved = Path.IsPathRooted(path) ? path : Path.Combine(AppContext.BaseDirectory, path);
+        var handle = Image.LoadTexture(sdlRenderer, resolved);
+        if (handle == IntPtr.Zero)
+            throw new Exception($"Failed to load texture '{resolved}': {SDL.GetError()}");
+
+        var texture = new Texture(handle);
+        texture.SetScaleMode(scaleMode);
+        texture.SetBlendMode(SDL.BlendMode.Blend);
+        return texture;
+    }
+
     public void SetScaleMode(SDL.ScaleMode mode)
     {
         SDL.SetTextureScaleMode(Handle, mode);
