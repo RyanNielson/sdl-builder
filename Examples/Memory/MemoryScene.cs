@@ -16,8 +16,8 @@ public class MemoryScene : Scene
         new(220, 100, 160),  // Pink
     ];
 
-    private readonly List<ActorHandle> cardHandles = new();
-    private ActorHandle firstPick = ActorHandle.Invalid;
+    private readonly List<Handle<Actor>> cardHandles = new();
+    private Handle<Actor> firstPick = Handle<Actor>.Invalid;
     private int pendingPairs;
 
     public MemoryScene() { }
@@ -87,10 +87,10 @@ public class MemoryScene : Scene
             StartCoroutine(FlipBackPair(firstPick, secondHandle));
         }
 
-        firstPick = ActorHandle.Invalid;
+        firstPick = Handle<Actor>.Invalid;
     }
 
-    private IEnumerator RemoveMatchedPair(ActorHandle a, ActorHandle b)
+    private IEnumerator RemoveMatchedPair(Handle<Actor> a, Handle<Actor> b)
     {
         yield return new WaitForSeconds(0.4);
         Despawn(a);
@@ -98,7 +98,7 @@ public class MemoryScene : Scene
         pendingPairs--;
     }
 
-    private IEnumerator FlipBackPair(ActorHandle a, ActorHandle b)
+    private IEnumerator FlipBackPair(Handle<Actor> a, Handle<Actor> b)
     {
         yield return new WaitForSeconds(0.6);
         var first = GetActor<Card>(a);

@@ -4,62 +4,34 @@ using System.Collections;
 
 public abstract class Scene
 {
-    // Slot 0 is reserved so that a default ActorHandle (Id == 0) is invalid.
-    private readonly List<Actor?> actors = new() { null };
-    private readonly List<int> generations = new() { 0 };
-    private readonly Queue<int> freeSlots = new();
-    private readonly List<ActorHandle> pendingActivations = new();
-    private readonly List<ActorHandle> pendingDespawns = new();
+    private readonly SlotMap<Actor> actors = new();
+    private readonly List<Handle<Actor>> pendingActivations = new();
+    private readonly List<Handle<Actor>> pendingDespawns = new();
     private readonly CoroutineRunner coroutines = new();
 
-    public CoroutineHandle StartCoroutine(IEnumerator routine) => coroutines.Start(routine);
-    public void StopCoroutine(CoroutineHandle handle) => coroutines.Stop(handle);
+    public Handle<Routine> StartCoroutine(IEnumerator routine) => coroutines.Start(routine);
+    public void StopCoroutine(Handle<Routine> handle) => coroutines.Stop(handle);
 
     public abstract void Start();
 
-    public ActorHandle Spawn(Actor actor)
+    public Handle<Actor> Spawn(Actor actor)
     {
-        int slot;
-
-        if (freeSlots.Count > 0)
-        {
-            slot = freeSlots.Dequeue();
-        }
-        else
-        {
-            slot = actors.Count;
-            actors.Add(null);
-            generations.Add(0);
-        }
-
-        var handle = new ActorHandle(slot, generations[slot]);
+        var handle = actors.Insert(actor);
         actor.Handle = handle;
         actor.IsStarted = false;
-        actors[slot] = actor;
         pendingActivations.Add(handle);
         return handle;
     }
 
-    public void Despawn(ActorHandle handle)
+    public void Despawn(Handle<Actor> handle)
     {
-        if (!handle.IsValid || handle.Id >= actors.Count)
-            return;
-
-        if (generations[handle.Id] != handle.Generation)
-            return;
-
-        pendingDespawns.Add(handle);
+        if (actors.Contains(handle))
+            pendingDespawns.Add(handle);
     }
 
-    public T? GetActor<T>(ActorHandle handle) where T : Actor
+    public T? GetActor<T>(Handle<Actor> handle) where T : Actor
     {
-        if (!handle.IsValid || handle.Id >= actors.Count)
-            return null;
-
-        if (generations[handle.Id] != handle.Generation)
-            return null;
-
-        return actors[handle.Id] as T;
+        return actors.TryGet(handle, out var actor) ? actor as T : null;
     }
 
     private void ProcessPendingActivations()
@@ -69,15 +41,10 @@ public abstract class Scene
         for (int i = 0; i < count; i++)
         {
             var handle = pendingActivations[i];
-
-            if (generations[handle.Id] != handle.Generation)
+            if (!actors.TryGet(handle, out var actor))
                 continue;
 
-            var actor = actors[handle.Id];
-            if (actor == null)
-                continue;
-
-            actor.IsStarted = true;
+            actor!.IsStarted = true;
             actor.OnStart(this);
         }
 
@@ -89,16 +56,11 @@ public abstract class Scene
         for (int i = 0; i < pendingDespawns.Count; i++)
         {
             var handle = pendingDespawns[i];
-
-            if (generations[handle.Id] != handle.Generation)
+            if (!actors.TryGet(handle, out var actor))
                 continue;
 
-            var actor = actors[handle.Id];
-            actor?.OnDespawn(this);
-
-            actors[handle.Id] = null;
-            generations[handle.Id]++;
-            freeSlots.Enqueue(handle.Id);
+            actor!.OnDespawn(this);
+            actors.Remove(handle);
         }
 
         pendingDespawns.Clear();

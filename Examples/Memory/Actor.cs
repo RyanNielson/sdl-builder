@@ -2,7 +2,7 @@ namespace Memory;
 
 public abstract class Actor
 {
-    public ActorHandle Handle { get; internal set; }
+    public Handle<Actor> Handle { get; internal set; }
     internal bool IsStarted { get; set; }
     public bool IsActive { get; set; } = true;
 

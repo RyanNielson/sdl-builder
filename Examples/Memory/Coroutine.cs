@@ -38,75 +38,24 @@ public sealed class WaitUntil : IYieldInstruction
     public bool IsDone(double nowMs) => predicate();
 }
 
-public readonly struct CoroutineHandle : IEquatable<CoroutineHandle>
+public sealed class Routine
 {
-    public int Id { get; }
-    public int Generation { get; }
-
-    public CoroutineHandle(int id, int generation)
-    {
-        Id = id;
-        Generation = generation;
-    }
-
-    public bool IsValid => Id > 0;
-    public static CoroutineHandle Invalid => default;
-
-    public bool Equals(CoroutineHandle other) => Id == other.Id && Generation == other.Generation;
-    public override bool Equals(object? obj) => obj is CoroutineHandle h && Equals(h);
-    public override int GetHashCode() => HashCode.Combine(Id, Generation);
+    internal readonly Stack<IEnumerator> Stack = new();
+    internal IYieldInstruction? Wait;
 }
 
 public class CoroutineRunner
 {
-    private class Routine
+    private readonly SlotMap<Routine> routines = new();
+
+    public Handle<Routine> Start(IEnumerator routine)
     {
-        public readonly Stack<IEnumerator> Stack = new();
-        public IYieldInstruction? Wait;
-    }
-
-    // Slot 0 is reserved so that a default CoroutineHandle (Id == 0) is invalid.
-    private readonly List<Routine?> routines = new() { null };
-    private readonly List<int> generations = new() { 0 };
-    private readonly Queue<int> freeSlots = new();
-
-    public CoroutineHandle Start(IEnumerator routine)
-    {
-        int slot;
-        if (freeSlots.Count > 0)
-        {
-            slot = freeSlots.Dequeue();
-        }
-        else
-        {
-            slot = routines.Count;
-            routines.Add(null);
-            generations.Add(0);
-        }
-
         var r = new Routine();
         r.Stack.Push(routine);
-        routines[slot] = r;
-
-        return new CoroutineHandle(slot, generations[slot]);
+        return routines.Insert(r);
     }
 
-    public void Stop(CoroutineHandle handle)
-    {
-        if (!handle.IsValid)
-            return;
-
-        if (handle.Id >= routines.Count)
-            return;
-
-        if (generations[handle.Id] != handle.Generation)
-            return;
-
-        if (routines[handle.Id] == null)
-            return;
-
-        Free(handle.Id);
-    }
+    public void Stop(Handle<Routine> handle) => routines.Remove(handle);
 
     public void Tick()
     {
@@ -153,14 +102,7 @@ public class CoroutineRunner
             }
 
             if (r.Stack.Count == 0)
-                Free(i);
+                routines.RemoveAt(i);
         }
-    }
-
-    private void Free(int slot)
-    {
-        routines[slot] = null;
-        generations[slot]++;
-        freeSlots.Enqueue(slot);
     }
 }
