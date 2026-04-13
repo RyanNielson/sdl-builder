@@ -1,12 +1,19 @@
 namespace Memory;
 
+using System.Collections;
+
 public abstract class Scene
 {
-    private readonly List<Actor?> actors = new();
-    private readonly List<int> generations = new();
+    // Slot 0 is reserved so that a default ActorHandle (Id == 0) is invalid.
+    private readonly List<Actor?> actors = new() { null };
+    private readonly List<int> generations = new() { 0 };
     private readonly Queue<int> freeSlots = new();
     private readonly List<ActorHandle> pendingActivations = new();
     private readonly List<ActorHandle> pendingDespawns = new();
+    private readonly CoroutineRunner coroutines = new();
+
+    public CoroutineHandle StartCoroutine(IEnumerator routine) => coroutines.Start(routine);
+    public void StopCoroutine(CoroutineHandle handle) => coroutines.Stop(handle);
 
     public abstract void Start();
 
@@ -102,6 +109,8 @@ public abstract class Scene
         ProcessPendingActivations();
 
         OnUpdate();
+
+        coroutines.Tick();
 
         for (int i = 0; i < actors.Count; i++)
         {

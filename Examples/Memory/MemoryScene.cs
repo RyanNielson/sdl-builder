@@ -1,6 +1,6 @@
 namespace Memory;
 
-using SDL3;
+using System.Collections;
 
 public class MemoryScene : Scene
 {
@@ -16,14 +16,9 @@ public class MemoryScene : Scene
         new(220, 100, 160),  // Pink
     ];
 
-    private const double FlipBackDelay = 600;
-    private const double MatchRemoveDelay = 400;
-
     private readonly List<ActorHandle> cardHandles = new();
-    private readonly Queue<(ActorHandle first, ActorHandle second, double removeTime)> pendingRemovals = new();
     private ActorHandle firstPick = ActorHandle.Invalid;
-    private ActorHandle secondPick = ActorHandle.Invalid;
-    private double flipBackTime;
+    private int pendingPairs;
 
     public MemoryScene() { }
 
@@ -51,28 +46,11 @@ public class MemoryScene : Scene
         }
     }
 
-    protected override void OnUpdate()
-    {
-        var second = GetActor<Card>(secondPick);
-        if (second != null && SDL.GetTicks() >= flipBackTime)
-        {
-            var first = GetActor<Card>(firstPick)!;
-            first.IsFaceUp = false;
-            second.IsFaceUp = false;
-            firstPick = ActorHandle.Invalid;
-            secondPick = ActorHandle.Invalid;
-        }
-
-        while (pendingRemovals.TryPeek(out var pending) && SDL.GetTicks() >= pending.removeTime)
-        {
-            pendingRemovals.Dequeue();
-            Despawn(pending.first);
-            Despawn(pending.second);
-        }
-    }
-
     protected override void OnMouseClick(float targetX, float targetY)
     {
+        if (pendingPairs > 0)
+            return;
+
         Card? clicked = null;
         foreach (var handle in cardHandles)
         {
@@ -87,30 +65,46 @@ public class MemoryScene : Scene
         if (clicked == null || clicked.IsFaceUp)
             return;
 
-        if (GetActor<Card>(secondPick) != null)
-            return;
-
         clicked.IsFaceUp = true;
 
         if (!firstPick.IsValid || GetActor<Card>(firstPick) == null)
         {
             firstPick = clicked.Handle;
+            return;
+        }
+
+        var first = GetActor<Card>(firstPick)!;
+        var secondHandle = clicked.Handle;
+
+        if (first.Color.Equals(clicked.Color))
+        {
+            pendingPairs++;
+            StartCoroutine(RemoveMatchedPair(firstPick, secondHandle));
         }
         else
         {
-            secondPick = clicked.Handle;
-            var first = GetActor<Card>(firstPick)!;
-
-            if (first.Color.Equals(clicked.Color))
-            {
-                pendingRemovals.Enqueue((firstPick, secondPick, SDL.GetTicks() + MatchRemoveDelay));
-                firstPick = ActorHandle.Invalid;
-                secondPick = ActorHandle.Invalid;
-            }
-            else
-            {
-                flipBackTime = SDL.GetTicks() + FlipBackDelay;
-            }
+            pendingPairs++;
+            StartCoroutine(FlipBackPair(firstPick, secondHandle));
         }
+
+        firstPick = ActorHandle.Invalid;
+    }
+
+    private IEnumerator RemoveMatchedPair(ActorHandle a, ActorHandle b)
+    {
+        yield return new WaitForSeconds(0.4);
+        Despawn(a);
+        Despawn(b);
+        pendingPairs--;
+    }
+
+    private IEnumerator FlipBackPair(ActorHandle a, ActorHandle b)
+    {
+        yield return new WaitForSeconds(0.6);
+        var first = GetActor<Card>(a);
+        var second = GetActor<Card>(b);
+        if (first != null) first.IsFaceUp = false;
+        if (second != null) second.IsFaceUp = false;
+        pendingPairs--;
     }
 }
