@@ -5,11 +5,11 @@ using System.Collections;
 public abstract class Scene
 {
     private readonly SlotMap<Actor> actors = new();
-    private readonly List<Handle<Actor>> pendingActivations = new();
-    private readonly List<Handle<Actor>> pendingDespawns = new();
+    private readonly List<Handle<Actor>> pendingActivations = [];
+    private readonly List<Handle<Actor>> pendingDespawns = [];
     private readonly CoroutineRunner coroutines = new();
 
-    public Handle<Routine> StartCoroutine(IEnumerator routine) => coroutines.Start(routine);
+    public Handle<Routine> StartCoroutine(IEnumerator routine, Handle<Actor> owner = default) => coroutines.Start(routine, owner);
     public void StopCoroutine(Handle<Routine> handle) => coroutines.Stop(handle);
 
     public abstract void Start(Renderer renderer);
@@ -18,6 +18,7 @@ public abstract class Scene
     {
         var handle = actors.Insert(actor);
         actor.Handle = handle;
+        actor.scene = this;
         actor.IsStarted = false;
         pendingActivations.Add(handle);
         return handle;
@@ -60,6 +61,8 @@ public abstract class Scene
                 continue;
 
             actor!.OnDespawn(this);
+            coroutines.StopAllOwnedBy(handle);
+            actor.scene = null;
             actors.Remove(handle);
         }
 

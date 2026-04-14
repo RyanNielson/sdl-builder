@@ -62,10 +62,10 @@ public class Renderer : IDisposable
 
     public void DrawRectOutline(float x, float y, float w, float h, float thickness, Color color)
     {
-        DrawRect(x, y, w, thickness, color);                     // top
-        DrawRect(x, y + h - thickness, w, thickness, color);     // bottom
-        DrawRect(x, y + thickness, thickness, h - 2 * thickness, color); // left
-        DrawRect(x + w - thickness, y + thickness, thickness, h - 2 * thickness, color); // right
+        DrawRect(x, y, w, thickness, color);
+        DrawRect(x, y + h - thickness, w, thickness, color);
+        DrawRect(x, y + thickness, thickness, h - 2 * thickness, color);
+        DrawRect(x + w - thickness, y + thickness, thickness, h - 2 * thickness, color);
     }
 
     public void DrawRect(float x, float y, float w, float h, Color color)

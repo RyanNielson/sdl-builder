@@ -8,15 +8,9 @@ public interface IYieldInstruction
     bool IsDone(double nowMs);
 }
 
-public sealed class WaitForSeconds : IYieldInstruction
+public sealed class WaitForSeconds(double seconds) : IYieldInstruction
 {
-    private readonly double seconds;
     private double resumeAt = -1;
-
-    public WaitForSeconds(double seconds)
-    {
-        this.seconds = seconds;
-    }
 
     public bool IsDone(double nowMs)
     {
@@ -26,14 +20,9 @@ public sealed class WaitForSeconds : IYieldInstruction
     }
 }
 
-public sealed class WaitUntil : IYieldInstruction
+public sealed class WaitUntil(Func<bool> predicate) : IYieldInstruction
 {
-    private readonly Func<bool> predicate;
-
-    public WaitUntil(Func<bool> predicate)
-    {
-        this.predicate = predicate;
-    }
+    private readonly Func<bool> predicate = predicate;
 
     public bool IsDone(double nowMs) => predicate();
 }
@@ -42,20 +31,31 @@ public sealed class Routine
 {
     internal readonly Stack<IEnumerator> Stack = new();
     internal IYieldInstruction? Wait;
+    internal Handle<Actor> Owner;
 }
 
 public class CoroutineRunner
 {
     private readonly SlotMap<Routine> routines = new();
 
-    public Handle<Routine> Start(IEnumerator routine)
+    public Handle<Routine> Start(IEnumerator routine, Handle<Actor> owner = default)
     {
-        var r = new Routine();
+        var r = new Routine { Owner = owner };
         r.Stack.Push(routine);
         return routines.Insert(r);
     }
 
     public void Stop(Handle<Routine> handle) => routines.Remove(handle);
+
+    public void StopAllOwnedBy(Handle<Actor> owner)
+    {
+        for (int i = 0; i < routines.Count; i++)
+        {
+            var r = routines[i];
+            if (r != null && r.Owner.Equals(owner))
+                routines.RemoveAt(i);
+        }
+    }
 
     public void Tick()
     {

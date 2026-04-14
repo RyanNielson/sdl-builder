@@ -3,8 +3,8 @@ namespace Memory;
 public class SlotMap<T> where T : class
 {
     // Slot 0 is reserved so that a default Handle (Id == 0) is invalid.
-    private readonly List<T?> items = new() { null };
-    private readonly List<int> generations = new() { 0 };
+    private readonly List<T?> items = [null];
+    private readonly List<int> generations = [0];
     private readonly Queue<int> freeSlots = new();
 
     public int Count => items.Count;
