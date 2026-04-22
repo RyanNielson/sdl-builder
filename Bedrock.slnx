@@ -1,6 +1,7 @@
 <Solution>
-  <Folder Name="/Examples/" />
-  <Folder Name="/Examples/Memory/">
-    <Project Path="Examples/Memory/Bedrock.Examples.Memory.csproj" />
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/Features/">
+    <Project Path="samples/Features/Bedrock.Samples.Features.csproj" />
   </Folder>
+  <Project Path="src/Bedrock/Bedrock.csproj" />
 </Solution>

@@ -1,7 +1,8 @@
-namespace Memory;
+﻿namespace Bedrock;
 
 using SDL3;
 
+// Should this be IDisposable
 public class Game : IDisposable
 {
     private readonly Window window;
@@ -12,8 +13,10 @@ public class Game : IDisposable
     public Game(GameConfig config, Scene scene)
     {
         if (!SDL.Init(SDL.InitFlags.Video))
-            throw new Exception($"SDL init failed: {SDL.GetError()}");
-
+        {
+            throw new Exception($"SDL not initialized {SDL.GetError()}");
+        }
+        
         if (!SDL.CreateWindowAndRenderer(config.Title, config.WindowWidth, config.WindowHeight, SDL.WindowFlags.Resizable, out var sdlWindow, out var sdlRenderer))
         {
             SDL.Quit();
@@ -24,31 +27,27 @@ public class Game : IDisposable
         renderer = new Renderer(sdlRenderer, config.TargetWidth, config.TargetHeight);
 
         this.scene = scene;
-        scene.Start(renderer);
+        // scene.Start(renderer)
     }
 
     public void Run()
     {
         running = true;
 
+        scene.Start();
+
         while (running)
         {
             while (SDL.PollEvent(out var e))
             {
                 if ((SDL.EventType)e.Type == SDL.EventType.Quit)
-                    running = false;
-
-                if ((SDL.EventType)e.Type == SDL.EventType.MouseButtonDown)
                 {
-                    var (winWidth, winHeight) = window.Size;
-                    var (tx, ty) = renderer.WindowToTarget(winWidth, winHeight, e.Button.X, e.Button.Y);
-                    scene.HandleMouseClick(tx, ty);
+                    running = false;
                 }
             }
 
             scene.Update();
-
-            renderer.BeginFrame(new Color(30, 30, 30));
+            renderer.BeginFrame(new Color(67, 41, 82));
             scene.Draw(renderer);
             renderer.EndFrame();
         }
@@ -58,6 +57,5 @@ public class Game : IDisposable
     {
         renderer.Dispose();
         window.Dispose();
-        SDL.Quit();
     }
 }
