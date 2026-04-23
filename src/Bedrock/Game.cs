@@ -7,8 +7,11 @@ public class Game : IDisposable
 {
     private readonly Window window;
     private readonly Renderer renderer;
-    private readonly Scene scene;
+    private Scene scene;
+    private Scene? pendingScene;
     private bool running;
+
+    public Input Input { get; } = new();
 
     public Game(GameConfig config, Scene scene)
     {
@@ -27,7 +30,12 @@ public class Game : IDisposable
         renderer = new Renderer(sdlRenderer, config.TargetWidth, config.TargetHeight);
 
         this.scene = scene;
-        // scene.Start(renderer)
+        this.scene.Game = this;
+    }
+
+    public void ChangeScene(Scene nextScene)
+    {
+        pendingScene = nextScene;
     }
 
     public void Run()
@@ -38,18 +46,31 @@ public class Game : IDisposable
 
         while (running)
         {
+            Input.NewFrame();
+
             while (SDL.PollEvent(out var e))
             {
                 if ((SDL.EventType)e.Type == SDL.EventType.Quit)
                 {
                     running = false;
                 }
+
+                Input.HandleEvent(e);
             }
 
             scene.Update();
             renderer.BeginFrame(new Color(67, 41, 82));
             scene.Draw(renderer);
             renderer.EndFrame();
+
+            // Don't switch scene until after everything is done.
+            if (pendingScene != null)
+            {
+                scene = pendingScene;
+                pendingScene = null;
+                scene.Game = this;
+                scene.Start();
+            }
         }
     }
 

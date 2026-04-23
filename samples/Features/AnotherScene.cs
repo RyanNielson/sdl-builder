@@ -1,10 +1,8 @@
-using SDL3;
-
 namespace Bedrock.Samples.Features;
 
 using Bedrock;
 
-class FeaturesScene : Scene
+class AnotherScene : Scene
 {
     public override void Start()
     {
@@ -13,14 +11,11 @@ class FeaturesScene : Scene
 
     public override void Update()
     {
-        if (Game.Input.IsKeyPressed(SDL.Scancode.Space))
-        {
-            Game.ChangeScene(new ShapesScene());
-        }
+        
     }
        
     public override void Draw(Renderer renderer)
     {
- 
+        renderer.DrawRect(0, 0, 128, 128, Color.Red);
     }
 }
