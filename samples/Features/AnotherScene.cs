@@ -9,7 +9,7 @@ class AnotherScene : Scene
         
     }
 
-    public override void Update()
+    public override void Update(float dt)
     {
         
     }

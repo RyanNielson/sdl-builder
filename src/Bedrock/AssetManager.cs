@@ -41,7 +41,7 @@ public class AssetManager : IDisposable
         var file = AsepriteFileLoader.FromFile(fullPath);
 
         var frameWidth = file.CanvasWidth;
-        var frameHeight = file.CanvasWidth;
+        var frameHeight = file.CanvasHeight;
         var frameCount = file.Frames.Length;
 
         // TODO: Add 1/2 pix padding between each?

@@ -6,7 +6,7 @@ public abstract class Scene
 
     public abstract void Start();
 
-    public abstract void Update();
+    public abstract void Update(float dt);
     
     public abstract void Draw(Renderer renderer);
 }

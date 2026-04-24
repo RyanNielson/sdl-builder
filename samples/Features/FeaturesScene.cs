@@ -6,14 +6,16 @@ using Bedrock;
 
 class FeaturesScene : Scene
 {
-    private Sprite sprite = null;
+    private Sprite smileSprite = null;
+    private Sprite wideSprite = null;
     
     public override void Start()
     {
-        sprite = Game.Assets.Load<Sprite>("smile");
+        smileSprite = Game.Assets.Load<Sprite>("smile");
+        wideSprite = Game.Assets.Load<Sprite>("wide");
     }
 
-    public override void Update()
+    public override void Update(float dt)
     {
         if (Game.Input.IsKeyPressed(SDL.Scancode.Space))
         {
@@ -23,8 +25,10 @@ class FeaturesScene : Scene
        
     public override void Draw(Renderer renderer)
     {
-        renderer.DrawSprite(sprite, 0, 50, 50);
+        renderer.DrawSprite(smileSprite, 0, 50, 50);
         
-        renderer.DrawSprite(sprite, 1, 75, 50);
+        renderer.DrawSprite(smileSprite, 1, 75, 50);
+        
+        renderer.DrawSprite(wideSprite, 0, 25, 100);
     }
 }
