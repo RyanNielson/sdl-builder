@@ -207,6 +207,15 @@ public class Renderer : IDisposable
         
         SDL.RenderGeometry(sdlRenderer, IntPtr.Zero, ringVertices, segments * 2, ringIndices, segments * 6);
     }
+
+    public void DrawSprite(Sprite sprite, int frameIndex, float x, float y)
+    {
+        var frame = sprite.Frames[frameIndex];
+        var src = (SDL.FRect)frame.Source;
+        var dst = (SDL.FRect)new Rect(x, y, src.W, src.H);
+
+        SDL.RenderTexture(sdlRenderer, sprite.Texture.SdlTexture, in src, in dst);
+    }
     
     private static SDL.Vertex Rotated(float lx, float ly, float px, float py, float cos, float sin, SDL.FColor color)
     {

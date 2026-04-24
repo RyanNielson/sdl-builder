@@ -2,7 +2,7 @@ namespace Bedrock;
 
 public abstract class Scene
 {
-    public Game Game { get; internal set; } = null;
+    public Game? Game { get; internal set; } = null;
 
     public abstract void Start();
 

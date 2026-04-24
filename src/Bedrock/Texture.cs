@@ -20,7 +20,7 @@ public class Texture : IDisposable
     public static Texture Create(IntPtr sdlRenderer, int width, int height,
         SDL.TextureAccess access = SDL.TextureAccess.Static, SDL.ScaleMode scaleMode = SDL.ScaleMode.Nearest)
     {
-        var sdlTexture = SDL.CreateTexture(sdlRenderer, SDL.PixelFormat.RGBA8888, access, width, height);
+        var sdlTexture = SDL.CreateTexture(sdlRenderer, SDL.PixelFormat.ABGR8888, access, width, height);
         if (sdlTexture == IntPtr.Zero)
         {
             throw new Exception($"Failed to create texture: {SDL.GetError()}");

@@ -12,6 +12,7 @@ public class Game : IDisposable
     private bool running;
 
     public Input Input { get; } = new();
+    public AssetManager Assets { get; }
 
     public Game(GameConfig config, Scene scene)
     {
@@ -28,6 +29,9 @@ public class Game : IDisposable
 
         window = new Window(sdlWindow);
         renderer = new Renderer(sdlRenderer, config.TargetWidth, config.TargetHeight);
+
+        var assetsRoot = Path.Combine(AppContext.BaseDirectory, "assets");
+        Assets = new AssetManager(sdlRenderer, assetsRoot);
 
         this.scene = scene;
         this.scene.Game = this;
@@ -76,6 +80,7 @@ public class Game : IDisposable
 
     public void Dispose()
     {
+        Assets.Dispose();
         renderer.Dispose();
         window.Dispose();
     }
